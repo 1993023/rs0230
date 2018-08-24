@@ -1,0 +1,229 @@
+from ZODB import DB
+from ZODB.FileStorage import FileStorage
+import persistent 
+import transaction
+import datetime
+from datetime import datetime
+from dateutil import relativedelta
+
+
+#PERSON: Name , Address , Birth_date , Age , Ssn
+class Person(persistent.Persistent):
+    def __init__(self,name,address,Birthdate,age,ssn,insurance):
+        self.name=name
+        self.address=address
+        self.Birthdate=Birthdate
+        self.age=age
+        self.ssn=ssn
+        self.insurance=insurance
+    
+    @classmethod
+    def age_calculation(self,Birthdate):
+        
+        year,month,date = Birthdate.split('-')
+        Birthday=datetime(int(year),int(month),int(date))
+
+        Current_day =datetime.now().date()
+    
+        #This will find the difference between the two dates
+        difference = relativedelta.relativedelta(Current_day, Birthday)
+
+        years = difference.years
+        months = difference.months
+        days = difference.days
+        
+        age=("age is  %s years,%s months,%days"%(years,months,days))
+        return age 
+
+  
+#EMPLOYEE: Name , Address , Birth_date , Age , Ssn , Salary , Hire_date , Seniority
+class Employee(Person,persistent.Persistent):
+    def __init__( self, name,address,Birthdate, age,ssn,salary,Hire_date,Seniority,insurance):
+        Person.__init__(self, name,address,Birthdate,age,ssn,insurance)
+        self.salary=salary
+        self.Hire_date=Hire_date
+        self.Seniority=Seniority
+        
+    
+    @classmethod  
+    def calulate_siniority(self,Hire_date):
+        year,month,date = Hire_date.split('-')
+        hire_day=datetime(int(year),int(month),int(date))
+
+        Today_date =datetime.now().date()
+    
+        #This will find the difference between the two dates
+        difference = relativedelta.relativedelta(Today_date, hire_day)
+
+        years = difference.years
+       
+        if years>5:
+            Siniority="YES"
+        else:
+            Siniority="NO"
+       
+        return Siniority 
+    @classmethod
+    def insurance_cal(self,salary):
+        return round(salary*1.0002,2)
+    
+    
+ 
+ 
+class Degree(persistent.Persistent):
+    def __init__(self,college,degree,year):
+        self.college=college
+        self.degree=degree
+        self.year=year
+             
+        
+#STUDENT: Name , Address , Birth_date , Age , Ssn , Major , Gpa
+class Student(Person,Degree,persistent.Persistent):
+    def __init__(self,name,address,Birthdate,age,ssn,major,gpa,insurance,college,degree,year):
+        Person.__init__(self, name,address,Birthdate,age,ssn,insurance)
+        Degree.__init__(self, college, degree, year)
+        self.major=major
+        self.gpa=gpa
+       
+    @classmethod   
+    def insurance_cal(self):
+        return round(100000*1.85,2)
+    
+ 
+
+# setup the database
+storage=FileStorage("ry1.fs")
+db=DB(storage)
+connection=db.open()
+root=connection.root()
+
+storage=FileStorage("ry2.fs")
+db=DB(storage)
+connection=db.open()
+root=connection.root()
+# get the employees mapping, creating an empty mapping if
+# necessary
+if not root.has_key("ry1"):
+    root["ry1"] = {}
+employees=root["ry1"]
+
+if not root.has_key("ry2"):
+    root["ry2"] = {}
+students=root["ry2"]
+
+for key,value in employees.items():
+    print key,value
+
+#def __init__( self, name,address,Birthdate, age,ssn,salary,Hire_date,Seniority):
+def listEmployees():
+    if len(employees.values())==0:
+        print "There are no employees."
+        print
+        return
+    for employee in employees.values():
+        #print employees.values()
+        print "Name: %s" % employee.name
+        print "address : %s" % employee.address
+        print "Birthdate : %s" % employee.Birthdate
+        print "age : %s" % employee.age
+        print "ssn : %s" % employee.ssn
+        print "salary : %d" % employee.salary
+        print "Hire_date : %s" % employee.Hire_date
+        print "Seniority : %s" % employee.Seniority
+        print "insurance : %d" % employee.insurance
+        
+        print
+
+#def __init__(self,name,address,Birthdate,age,ssn,major,gpa):
+def listStudent():
+    if len(students.values())==0:
+        print "There are no students."
+        print
+        return
+    for stu in students.values():
+        #print employees.values()
+        print "Name: %s" % stu.name
+        print "address : %s" % stu.address
+        print "Birthdate : %s" % stu.Birthdate
+        print "age : %s" % stu.age
+        print "ssn : %s" % stu.ssn
+        print "major : %s" % stu.major
+        print "gpa : %s" % stu.gpa
+        print "insurance : %d" % stu.insurance
+        print "college : %s" % stu.college
+        print "degree : %s" % stu.degree
+        print "year : %s" % stu.year
+        print
+
+def addEmployee(name,address,Birthdate, age,ssn,salary,Hire_date,Seniority,insurance):
+    if employees.has_key(name):
+        print "There is already an employee with this name."
+        return
+    
+    else:
+        employees[name]=Employee(name,address,Birthdate, age,ssn,salary,Hire_date,Seniority,insurance)
+
+    root['ry1'] = employees  # reassign to change
+    transaction.commit()
+    print "Employee %s added." % name
+    print
+
+def addStudents(name,address,Birthdate,age,ssn,major,gpa,insurance,college,degree,year):
+    if students.has_key(name):
+        print "There is already an students with this name."
+        return
+    
+    else:
+        students[name]=Student(name,address,Birthdate,age,ssn,major,gpa,insurance,college,degree,year)
+
+    root['ry2'] = students  # reassign to change
+    transaction.commit()
+    print "student %s added." % name
+    print
+
+
+
+if __name__=="__main__":
+    while 1:
+        #choice=raw_input("Press 'E' to list employees, Press 'S' to list students,'EA' to add an employee, 'SA' to add an employee,or 'Q' to quit:")
+        choice=raw_input("E: Employee_Detail\nS: Student_detail\nEA: Add Employee\nSA: Add Student\nQ: Quit")
+        
+        if choice=="E":
+            listEmployees()
+        if choice=="S":
+            listStudent()
+            #def __init__( self, name,address,Birthdate, age,ssn,salary,Hire_date,Seniority ):     
+        if choice=="EA":
+            
+            name=raw_input("name:")
+            address=raw_input("address:")
+            Birthdate = raw_input("Birthdate in format 'yy-mm-dd' : ")
+            age=Person.age_calculation(Birthdate)
+            ssn=raw_input("Employee ssn:")
+            salary=int(input("Employee salary:"))
+            Hire_date = raw_input("Hire_date in format 'yy-mm-dd' : ")
+            Seniority=Employee.calulate_siniority(Hire_date)
+            insurance=Employee.insurance_cal(salary)
+            addEmployee(name,address,Birthdate,age,ssn,salary,Hire_date,Seniority,insurance)
+           
+        #def __init__(self,name,address,Birthdate,age,ssn,major,gpa):
+        if choice=="SA":
+            name=raw_input("name:")
+            address=raw_input("address:")
+            Birthdate = raw_input("Birthdate in format 'yy-mm-dd' : ")
+            age=Person.age_calculation(Birthdate)
+            ssn=raw_input("ssn:")
+            major=raw_input("student major:")
+            gpa=raw_input("student gpa:")
+            insurance=Student.insurance_cal()
+            college=raw_input("college name:")
+            degree=raw_input("degree name:")
+            year=raw_input("year name:")
+            addStudents(name,address,Birthdate,age,ssn,major,gpa,insurance,college,degree,year)
+        elif choice=="Q":
+            break
+
+    # close database
+    connection.close()
+    
+    
