@@ -4,3 +4,59 @@ for window ----->>>>>
 https://www.robinwieruch.de/react-js-windows-setup/
 
 https://www.nodejsera.com/nodejs-tutorial-day13-signup-using-nodejs-express-mongodb.html //nodejs tutorial
+
+<!--
+   
+<!DOCTYPE html>
+<html>
+<body>
+
+<p>Click the button to create a File Upload Button.</p>
+
+<button onclick="myFunction()">Try it</button>
+
+<script>
+function myFunction() {
+    var x = document.createElement("input");
+    x.setAttribute("type", "file");
+    document.body.appendChild(x);
+}
+</script>
+
+</body>
+</html>
+-->
+
+##########################Cloning the element in Html and javascript################## 
+
+<html>
+<body>
+
+<name:input type="text" name="name"  id="myList">
+
+<p>Click the button to append an item to the end of the list.</p>
+
+<button onclick="myFunction()">name</button>
+
+<script>
+function myFunction() {
+    var node = document.createElement("input");
+    var textnode = document.createTextNode("name");
+    node.appendChild(textnode);
+    document.getElementById("myList").appendChild(textnode)
+    document.getElementById("myList").appendChild(node);
+     
+}
+</script>
+
+</body>
+</html>
+
+
+
+
+
+
+
+
+
