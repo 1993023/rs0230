@@ -1,0 +1,80 @@
+#removing stop words from sentence 
+  
+import nltk
+from nltk.tokenize import TreebankWordTokenizer
+from nltk.corpus import stopwords
+l = "Artificial intelligence, is all about applying mathematics"
+token=TreebankWordTokenizer().tokenize(l)
+print(token)
+stop_words=set(stopwords.words('english'))
+print(stop_words)
+output=[]
+for k in token:
+    print(k)
+    if k not in stop_words:
+        output.append(k)
+print(output)
+  
+  
+ 
+ 
+#removing punctuation and stop words from sentence 
+ 
+from nltk.tokenize import TreebankWordTokenizer
+from nltk.corpus import stopwords
+l = "physical exercise is good for our health,we should do exercise everyday!"
+print(l)
+token = TreebankWordTokenizer().tokenize(l)
+with_stopwds = []
+with_stopwds=[k for k in token if k.isalpha()]
+print(with_stopwds)
+  
+strNw=" "
+for i in range(len(with_stopwds)):
+    strNw=strNw+" "+with_stopwds[i]
+print(strNw)
+      
+      
+stop_wdsRmv=set(stopwords.words('english'))
+without_stpwds=[]
+without_stpwds=[k for k in with_stopwds if k not in stop_wdsRmv]
+print(without_stpwds)
+  
+  
+strNw2=" "
+for i in range(len(without_stpwds)):
+    strNw2=strNw2+" "+without_stpwds[i]
+print(strNw2)
+ 
+ 
+from nltk.tag import StanfordNERTagger
+from nltk.tokenize import word_tokenize
+StanfordNERTagger("/home/rahul/Downloads/stanford-ner-2018-02-27/classifiers/english.all.3class.distsim.crf.ser.gz","/home/rahul/Downloads/stanford-ner-2018-02-27/")
+text = "Ron was the founder of Ron Institute at New york"
+text = word_tokenize(text)
+ner_tags = ner_tagger.tag(text)
+print(ner_tags)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
