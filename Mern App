@@ -1,0 +1,447 @@
+step to follow to create MERN application:
+1.create-react-app mymernapp
+2.create in root project one folder called server
+3.in server folder:tree structure will be following 
+ 
+ --->>   folder:database
+     file      DB.js
+     
+     module.exports = {
+    DB: 'mongodb://localhost:27017/reactexpress'
+}
+     
+     
+     
+--->>>    folder:models
+          file    Dbmodel.js
+      
+      // ServerPort.js
+
+var mongoose = require('mongoose');
+var Schema = mongoose.Schema;
+
+// Define collection and schema for Items
+var ServerPort = new Schema({
+  name: {
+    type: String
+  },
+  port: {
+      type: String
+  },
+});
+
+module.exports = mongoose.model('ServerPort', ServerPort);
+      
+      
+       
+--->>>    folder:routes
+          file    dbrouter.js
+          
+          
+          // ServerPortRoutes.js
+
+const express = require('express');
+const app = express();
+const ServerPortRouter = express.Router();
+
+const ServerPort = require('../models/ServerPort');
+const ServerPortTwo = require('../models/ServerPortTwo');
+
+
+ServerPortRouter.route('/add').post(function (req, res) {
+  const serverport = new ServerPort(req.body);
+  serverport.save()
+    .then(items => {
+        res.json('Server added successfully');
+    })
+    .catch(err => {
+    res.status(400).send("unable to save to database");
+    });
+});
+
+
+ServerPortRouter.route('/').get(function (req, res) {
+    ServerPort.find(function (err, serverports){
+    if(err){
+      console.log(err);
+    }
+    else {
+      res.json(serverports);
+    }
+  });
+});
+
+
+ServerPortRouter.route('/edit/:id').get(function (req, res) {
+  const id = req.params.id;
+  ServerPort.findById(id, function (err, serverport){
+      res.json(serverport);
+  });
+});
+
+ServerPortRouter.route('/update/:id').post(function (req, res) {
+    ServerPort.findById(req.params.id, function(err, serverport) {
+    if (!serverport)
+      return next(new Error('Could not load Document'));
+    else {
+      // do your updates here
+      serverport.name = req.body.name;
+      serverport.port = req.body.port;
+
+      serverport.save().then(serverport => {
+          res.json('Update complete');
+      })
+      .catch(err => {
+            res.status(400).send("unable to update the database");
+      });
+    }
+  });
+});
+
+ServerPortRouter.route('/delete/:id').get(function (req, res) {
+    ServerPort.findByIdAndRemove({_id: req.params.id},
+       function(err, serverport){
+        if(err) res.json(err);
+        else res.json('Successfully removed');
+    });
+});
+
+module.exports = ServerPortRouter;
+      
+      
+      
+      
+   
+----->>>>> file server.js
+
+const express = require('express');
+const app = express();
+const mongoose = require('mongoose');
+const bodyParser = require('body-parser');
+const PORT = 4200;
+const cors = require('cors');
+
+const config = require('./database/DB');
+const ServerPortRouter = require('./routes/ServerPortRoutes');
+
+mongoose.connect(config.DB).then(
+    () => {console.log('Database is connected') },
+    err => { console.log('Can not connect to the database' +err)
+});
+
+app.use(cors());
+app.use(bodyParser.urlencoded({extended: true}));
+app.use(bodyParser.json());
+
+app.use('/serverport', ServerPortRouter);
+
+app.listen(PORT, function(){
+  console.log('Server is running on Port: ',PORT);
+});
+
+
+
+-->> Next come to src folder and create Components folder
+inside the Component  1.craeteComponent.js
+
+import React, { Component } from 'react';
+import axios from 'axios';
+
+export default class CreateComponent extends Component {
+
+    constructor(props) {
+        super(props);
+        this.onChangeHostName = this.onChangeHostName.bind(this);
+        this.onChangePort = this.onChangePort.bind(this);
+        this.onChangeDesc = this.onChangeDesc.bind(this);
+        this.onSubmit = this.onSubmit.bind(this);
+
+        this.state = {
+            name: '',
+            port: '',
+            desc:''
+        }
+    }
+    onChangeHostName(e) {
+        this.setState({
+            name: e.target.value
+        });
+    }
+    onChangePort(e) {
+        this.setState({
+            port: e.target.value
+        });
+    }
+
+    onChangeDesc(e) {
+        this.setState({
+            desc: e.target.value
+        });
+    }
+
+
+    onSubmit(e) {
+        e.preventDefault();
+        const serverport = {
+            name: this.state.name,
+            port: this.state.port,
+        }
+        
+        axios.post('http://localhost:4200/serverport/add', serverport)
+        .then(res => console.log(res.data));
+        this.setState({
+            name: '',
+            port: ''
+        })
+        
+    }
+
+    render() {
+        return (
+            <div style={{marginTop: 50}}>
+                <h3>Information Detail</h3>
+                <form onSubmit={this.onSubmit}>
+                    <div className="form-group">
+                        <label>First Name:  </label>
+                        <input type="text" value={this.state.name} className="form-control" onChange={this.onChangeHostName}/>
+                    </div>
+                    <div className="form-group">
+                        <label>Last Name: </label>
+                        <input type="text" value={this.state.port} className="form-control" onChange={this.onChangePort}/>
+                    </div>
+                    <div className="form-group">
+                        <input type="submit" value="Desciption submit " className="btn btn-primary"/>
+                    </div>
+                </form>
+            </div>
+        )
+    }
+}
+
+2.EditComponent.js
+
+
+import React, { Component } from 'react';
+import axios from 'axios';
+
+export default class EditComponent extends Component {
+
+    constructor(props) {
+        super(props);
+        this.onChangeHostName = this.onChangeHostName.bind(this);
+        this.onChangePort = this.onChangePort.bind(this);
+        this.onSubmit = this.onSubmit.bind(this);
+
+        this.state = {name: '', port: '',desc:''};
+    }
+
+    componentDidMount() {
+        axios.get('http://localhost:4200/serverport/edit/'+this.props.match.params.id)
+            .then(response => {
+                this.setState({ name: response.data.name, port: response.data.port, desc:response.data.desc });
+            })
+            .catch(function (error) {
+                console.log(error);
+            })
+        }
+
+    onChangeHostName(e) {
+        this.setState({
+            name: e.target.value
+        });
+    }
+    onChangePort(e) {
+        this.setState({
+            port: e.target.value
+        });
+    }
+
+    onChangeDesc(e) {
+        this.setState({
+            desc: e.target.value
+        });
+    }
+    onSubmit(e) {
+        e.preventDefault();
+        const serverport = {
+            name: this.state.name,
+            port: this.state.port,
+        }
+        axios.post('http://localhost:4200/serverport/update/'+this.props.match.params.id, serverport)
+        .then(res => console.log(res.data));
+        this.setState({
+            name: '',
+            port: ''
+        })
+        this.props.history.push('/index');
+    }
+
+    render() {
+        return (
+            <div style={{marginTop: 50}}>
+                <h3>Edit Information</h3>
+                <form onSubmit={this.onSubmit}>
+                    <div className="form-group">
+                        <label>First name:  </label>
+                        <input type="text" value={this.state.name} className="form-control" onChange={this.onChangeHostName}/>
+                    </div>
+                    <div className="form-group">
+                        <label>Last Name: </label>
+                        <input type="text" value={this.state.port} className="form-control" onChange={this.onChangePort}/>
+                    </div>
+
+                    <div className="form-group">
+                        <input type="submit" value="Update server" className="btn btn-primary"/>
+                    </div>
+                </form>
+            </div>
+        )
+    }
+}
+
+3.indexComponent.js
+
+import React, { Component } from 'react';
+import axios from 'axios';
+import TableRow from './TableRow';
+
+export default class IndexComponent extends Component {
+
+  constructor(props) {
+      super(props);
+      this.state = {serverports: []};
+    
+    }
+    componentDidMount(){
+      axios.get('http://localhost:4200/serverport')
+      .then(response => {
+        this.setState({ serverports: response.data });
+      })
+      .catch(function (error) {
+        console.log(error);
+      })
+    }
+    tabRow(){
+        return this.state.serverports.map(function(object, i){
+            return <TableRow obj={object} key={i} />;
+        });
+    }
+
+    render() {
+      return (
+        <div className="container">
+            <table className="table table-striped">
+              <thead>
+                <tr>
+                  <td>ID</td>
+                  <td>First Name</td>
+                  <td>Last Name</td>
+                </tr>
+              </thead>
+              <tbody>
+                {this.tabRow()}
+              </tbody>
+            </table>
+        </div>
+      );
+    }
+  }
+  
+4.TableRow.js
+import React, { Component } from 'react';
+import { Link } from 'react-router-dom';
+import axios from 'axios';
+
+class TableRow extends Component {
+    constructor(props) {
+        super(props);
+        this.delete = this.delete.bind(this);
+    }
+    delete() {
+        axios.get('http://localhost:4200/serverport/delete/'+this.props.obj._id)
+            .then(console.log('Deleted'))
+            .catch(err => console.log(err))
+    }
+  render() {
+    return (
+        <tr>
+          <td>
+            {this.props.obj._id}
+          </td>
+          <td>
+            {this.props.obj.name}
+          </td>
+          <td>
+            {this.props.obj.port}
+          </td>
+
+          <td>
+            {this.props.obj.desc}
+          </td>
+
+          <td>
+          <Link to={"/edit/"+this.props.obj._id} className="btn btn-primary">Edit</Link>
+          </td>
+          <td>
+            <button onClick={this.delete} className="btn btn-danger">Delete</button>
+          </td>
+        </tr>
+    );
+  }
+}
+
+export default TableRow;
+
+
+--->... And finally
+
+App.js
+
+import React, { Component } from 'react';
+import { BrowserRouter as Router, Switch, Route, Link } from 'react-router-dom';
+
+import CreateComponent from './components/CreateComponent';
+import EditComponent from './components/EditComponent';
+import IndexComponent from './components/IndexComponent';
+
+class App extends Component {
+  render() {
+    return (
+    <Router>
+        <div className="container">
+        <nav className="navbar navbar-expand-lg navbar-light bg-light">
+            <a className="navbar-brand">React Express App  </a>
+            <div className="collapse navbar-collapse" id="navbarSupportedContent">
+              <ul className="navbar-nav mr-auto">
+              <li className="nav-item">
+                  <Link to={'/'} className="nav-link">Home</Link>
+                </li>
+                <li className="nav-item">
+                  <Link to={'/create'} className="nav-link">Create</Link>
+                </li>
+                <li className="nav-item">
+                  <Link to={'/index'} className="nav-link">Index</Link>
+                </li>
+              </ul>
+            </div>
+          </nav>
+          <Switch>
+              <Route exact path='/create' component={CreateComponent} />
+              <Route path='/edit/:id' component={EditComponent} />
+              <Route path='/index' component={IndexComponent} />
+          </Switch>
+        </div>
+      </Router>
+    );
+  }
+}
+
+export default App;
+
+
+
+
+
+
+
+
