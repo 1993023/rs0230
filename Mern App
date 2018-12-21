@@ -3,7 +3,7 @@ step to follow to create MERN application:
 2.create in root project one folder called server
 3.in server folder:tree structure will be following 
  
- --->>   folder:database
+ -------------folder:database------------------------------
      file      DB.js
      
      module.exports = {
@@ -12,7 +12,7 @@ step to follow to create MERN application:
      
      
      
---->>>    folder:models
+-------------folder:models----------------------------------------------
           file    Dbmodel.js
       
       // ServerPort.js
@@ -34,7 +34,7 @@ module.exports = mongoose.model('ServerPort', ServerPort);
       
       
        
---->>>    folder:routes
+----------------   folder:routes------------------------------------
           file    dbrouter.js
           
           
@@ -112,7 +112,7 @@ module.exports = ServerPortRouter;
       
       
    
------>>>>> file server.js
+----------------- file server.js------------------------------------------------
 
 const express = require('express');
 const app = express();
@@ -141,7 +141,7 @@ app.listen(PORT, function(){
 
 
 
--->> Next come to src folder and create Components folder
+----------------- Next come to src folder and create Components folder----------------------------------------
 inside the Component  1.craeteComponent.js
 
 import React, { Component } from 'react';
@@ -218,7 +218,7 @@ export default class CreateComponent extends Component {
     }
 }
 
-2.EditComponent.js
+---------------------2.EditComponent.js-----------------------------------------
 
 
 import React, { Component } from 'react';
@@ -299,7 +299,7 @@ export default class EditComponent extends Component {
     }
 }
 
-3.indexComponent.js
+----------------------------------3.indexComponent.js------------------------------------------------
 
 import React, { Component } from 'react';
 import axios from 'axios';
@@ -347,7 +347,7 @@ export default class IndexComponent extends Component {
     }
   }
   
-4.TableRow.js
+------------------------------------------4.TableRow.js------------------------------------------------
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
@@ -393,7 +393,7 @@ class TableRow extends Component {
 export default TableRow;
 
 
---->... And finally
+----------------------- And finally------------------------------------------
 
 App.js
 
@@ -438,6 +438,13 @@ class App extends Component {
 
 export default App;
 
+----------------------------------------------------------------------------------------------------
+Running procedure:
+1.run the file server.js in one terminal
+root@Rahulkumar:/home/rahulkumar/formJs/mymernapp/server# nodemon server.js
+
+2.run the ur mern peoject in another terminal 
+root@Rahulkumar:/home/rahulkumar/formJs/mymernapp# npm start
 
 
 
